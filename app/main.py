@@ -5,18 +5,18 @@ import openai
 import os
 from dotenv import load_dotenv
 
-# Carrega as variáveis do arquivo .env
+# Load environment variables from the .env file
 load_dotenv()
 
 app = FastAPI()
 
-# Configura a chave da API OpenAI
+# Configure the OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Configura a URL base da API OpenAI
+# Configure the OpenAI API base URL
 openai.api_base = os.getenv("openai_base_url")
 
-# Modelos
+# Models
 class Job(BaseModel):
     cst_name: str
     client_problem_statement: str
@@ -37,23 +37,23 @@ class CandidateMatch(BaseModel):
 @app.post("/match", response_model=List[CandidateMatch])
 async def match_candidates(request: MatchRequest):
     try:
-        # Prompt para o LLM
+        # Prompt for the LLM
         prompt = f"""
-        Baseado na descrição do trabalho abaixo, avalie e classifique os 3 melhores candidatos:
+        Based on the job description below, evaluate and rank the top 3 candidates:
         {request.job.dict()}
         """
 
-        # Chamada ao modelo da OpenAI usando ChatCompletion
+        # Call the OpenAI model using ChatCompletion
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "Você é um assistente que avalia candidatos para vagas de emprego."},
+                {"role": "system", "content": "You are an assistant that evaluates candidates for job positions."},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=500
         )
 
-        # Simulação de resposta
+        # Simulated response
         matches = [
             {
                 "full_name": "Tammy Harvey",
@@ -75,6 +75,6 @@ async def match_candidates(request: MatchRequest):
         return matches
 
     except Exception as e:
-        # Captura o erro e retorna uma mensagem de erro 500
-        print(f"Erro no endpoint /match: {e}")
-        raise HTTPException(status_code=500, detail="Erro interno no servidor")
+        # Capture the error and return a 500 error message
+        print(f"Error in /match endpoint: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
