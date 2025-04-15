@@ -70,7 +70,7 @@ async def match_candidates(request: MatchRequest):
 
         # Extract the content from the OpenAI response
         content = response['choices'][0]['message']['content']
-        print(f"Raw OpenAI response: {content}")  # Debugging log
+        #print(f"Raw OpenAI response: {content}")  # Debugging log
 
         # Remove Markdown-style code block formatting if present
         if content.startswith("```") and content.endswith("```"):
