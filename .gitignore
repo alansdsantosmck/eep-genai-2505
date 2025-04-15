@@ -1,0 +1,59 @@
+# Ignore environment files
+.env
+
+# Ignore Python cache and virtual environments
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.pyc
+
+# Ignore virtual environment folders
+venv/
+env/
+
+# Ignore dependency lock files
+Pipfile
+Pipfile.lock
+poetry.lock
+
+# Ignore logs
+logs/
+*.log
+
+# Ignore database files
+*.sqlite3
+db.sqlite3
+
+# Ignore FastAPI/Uvicorn generated files
+*.db
+instance/
+*.pid
+
+# Ignore compiled code
+*.out
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.exe
+*.app
+
+# Ignore system files
+Thumbs.db
+.DS_Store
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.iml
+*.sublime-workspace
+
+# Ignore Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Ignore test coverage reports
+.coverage
+htmlcov/
+coverage.xml
