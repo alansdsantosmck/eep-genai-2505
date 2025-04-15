@@ -37,58 +37,70 @@ class CandidateMatch(BaseModel):
     explanation: str
 
 
-
 @app.post("/match", response_model=List[CandidateMatch])
 async def match_candidates(request: MatchRequest):
     try:
-        # Prompt for the LLM
-        prompt = f"""
-        Based on the job description below, evaluate and rank the top 3 candidates. 
-        Provide the results in the following JSON format, and return only the JSON:
-        [
+        # Step 1: Load candidates from a JSON file
+        with open("app/data/candidates.json", "r") as f:
+            candidates = json.load(f)
+
+        # Step 2: Prepare a list to store scored candidates
+        scored_candidates = []
+
+        # Step 3: Iterate through each candidate and construct a prompt
+        for candidate in candidates:
+            # Dynamically construct the full_name field
+            full_name = f"{candidate.get('first_name', '')} {candidate.get('last_name', '')}".strip()
+
+            # Debugging log
+            print(f"Processing candidate: {full_name}")
+
+            prompt = f"""
+            Based on the job description and candidate profile below, evaluate the match and provide a score (0-10) and explanation.
+            Return the result in the following JSON format:
             {{
                 "full_name": "Candidate Name",
                 "score": float,
                 "explanation": "Reason for the score"
-            }},
-            ...
-        ]
+            }}
 
-        Job Description:
-        {request.job.dict()}
-        """
+            Job Description:
+            {request.job.dict()}
 
-        # Call the OpenAI model using ChatCompletion
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are an assistant that evaluates candidates for job positions."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=500
-        )
+            Candidate Profile:
+            {candidate}
+            """
 
-        # Extract the content from the OpenAI response
-        content = response['choices'][0]['message']['content']
-        #print(f"Raw OpenAI response: {content}")  # Debugging log
+            # Step 4: Call the OpenAI model using ChatCompletion
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are an assistant that evaluates candidates for job positions."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=500
+            )
 
-        # Remove Markdown-style code block formatting if present
-        if content.startswith("```") and content.endswith("```"):
-            content = content.strip("```").strip("json").strip()
+            # Extract the content from the OpenAI response
+            content = response['choices'][0]['message']['content']
+            print(f"Raw OpenAI response for {full_name}: {content}")  # Debugging log
 
-        # Safely parse the response content as JSON
-        matches = json.loads(content)
+            # Remove Markdown-style code block formatting if present
+            if content.startswith("```") and content.endswith("```"):
+                content = content.strip("```").strip("json").strip()
 
-        # Validate the structure of the parsed response
-        if not isinstance(matches, list):
-            raise ValueError("The response is not a valid list of candidates.")
+            # Safely parse the response content as JSON
+            scored_candidate = json.loads(content)
+            scored_candidates.append(scored_candidate)
 
-        return matches
+        # Step 5: Sort candidates by score in descending order
+        top_candidates = sorted(scored_candidates, key=lambda c: c["score"], reverse=True)[:3]
+
+        return top_candidates
 
     except json.JSONDecodeError as e:
         # Handle JSON parsing errors
         print(f"JSON parsing error: {e}")
-        print(f"Raw OpenAI response: {content}")
         raise HTTPException(
             status_code=500,
             detail="Invalid response format from OpenAI. Please check the prompt or the OpenAI API response."
