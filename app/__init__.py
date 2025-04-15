@@ -4,6 +4,7 @@ import shutil
 # Estrutura de diretórios e arquivos
 structure = {
     "app": [
+        "__init__.py",
         "main.py",
         "models.py",
         "schemas.py",
@@ -11,6 +12,7 @@ structure = {
         "utils.py"
     ],
     "tests": [
+        "__init__.py",
         "test_match.py"
     ],
     "": [  # Arquivos na raiz
@@ -26,6 +28,12 @@ def create_and_organize_structure(base_path, structure):
         folder_path = os.path.join(base_path, folder)
         if folder:  # Cria o diretório se não for a raiz
             os.makedirs(folder_path, exist_ok=True)
+            # Cria o arquivo __init__.py em cada diretório
+            init_file = os.path.join(folder_path, "__init__.py")
+            if not os.path.exists(init_file):
+                with open(init_file, "w") as f:
+                    f.write("")  # Cria um arquivo vazio
+                print(f"Criado: {init_file}")
         for file in files:
             file_path = os.path.join(folder_path, file)
             existing_file_path = os.path.join(base_path, file)
@@ -50,4 +58,4 @@ base_path = os.getcwd()
 # Cria a estrutura e organiza os arquivos
 create_and_organize_structure(base_path, structure)
 
-print("Estrutura do projeto organizada com sucesso!")
+print("Done!")
